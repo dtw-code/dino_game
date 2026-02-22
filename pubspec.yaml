@@ -23,6 +23,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/dino.png
-    - assets/images/ground.png
     - assets/images/cactus.png
+    - assets/images/runner.png
+    - assets/images/background.png
+    - assets/images/orb.png

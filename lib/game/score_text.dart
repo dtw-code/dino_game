@@ -11,7 +11,7 @@ class ScoreText extends TextComponent {
     textRenderer: TextPaint(
       style: const TextStyle(
         fontSize: 24,
-        color: Colors.black,
+        color: const Color(0xFF118f84),
         fontWeight: FontWeight.bold,
       ),
     ),

@@ -3,14 +3,15 @@ import 'package:flame/events.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/camera.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flame/components.dart';
+import 'dart:math';
 import 'ground.dart';
 import 'score_text.dart';
 import 'dino.dart';
 import 'obstacle.dart';
 
 enum GameState { ready, playing, gameOver }
-
+late ScoreText scoreText;
 class DinoGame extends FlameGame
     with HasKeyboardHandlerComponents,
         HasCollisionDetection,
@@ -18,7 +19,7 @@ class DinoGame extends FlameGame
 
   late Dino dino;
 
-  double gameSpeed = 250;
+  double gameSpeed = 180;
   final double acceleration = 20;
 
   double spawnTimer = 0;
@@ -26,26 +27,33 @@ class DinoGame extends FlameGame
 
   GameState state = GameState.ready;
 
-  @override
-  Color backgroundColor() => const Color(0xFFFFFFFF);
+
 
   @override
   Future<void> onLoad() async {
-    camera.viewport = FixedResolutionViewport(
-      resolution: Vector2(800, 450),
+    camera.viewport = MaxViewport();
+
+
+    final bg = await loadSprite('background.png');
+
+    add(
+      SpriteComponent(
+        sprite: bg,
+        size: size, // match your viewport
+        position: Vector2.zero(),
+      ),
     );
 
-    await images.loadAll([
-      'dino.png',
-      'ground.png',
-      'cactus.png',
-    ]);
+    add(Ground(gameSize: size));
 
     dino = Dino();
     add(dino);
 
-    add(Ground());
-    add(ScoreText());
+    //add(Ground());
+
+
+    scoreText = ScoreText();
+    add(scoreText);
 
     pauseEngine();
     overlays.add('Start');
@@ -68,14 +76,17 @@ class DinoGame extends FlameGame
 
     gameSpeed += acceleration * dt;
 
-    spawnInterval = 2 - (gameSpeed / 1000);
-    spawnInterval = spawnInterval.clamp(0.8, 2);
+    spawnInterval = (2 - (gameSpeed / 1000)).clamp(0.8, 2);
+    spawnInterval += (Random().nextDouble() * 0.3);
 
     spawnTimer += dt;
 
     if (spawnTimer >= spawnInterval) {
       spawnTimer = 0;
-      add(Obstacle());
+
+      if (children.whereType<Obstacle>().length < 2) {
+        add(Obstacle());
+      }
     }
   }
 
@@ -96,8 +107,10 @@ class DinoGame extends FlameGame
 
     overlays.remove('GameOver');
 
-    gameSpeed = 250;
+    gameSpeed = 150;
     spawnTimer = 0;
+    spawnInterval = 2; // add this
+    scoreText.reset();
     state = GameState.playing;
 
     resumeEngine();
